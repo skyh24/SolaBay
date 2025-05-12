@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Define types for the product data
 interface PriceHistory {
@@ -28,6 +28,7 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Load products from localStorage
@@ -152,18 +153,31 @@ const ProductList: React.FC<ProductListProps> = () => {
                   const latestPrice = product.priceHistory[product.priceHistory.length - 1].price;
                   
                   return (
-                    <div key={product.id} className="card overflow-hidden"
+                    <div key={product.id} className="card overflow-hidden cursor-pointer" 
                          style={{
                            borderRadius: '16px',
                            background: '#111111',
                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                            transition: 'all 0.3s ease'
-                         }}>
-                      <img 
-                        className="product-image w-full h-[180px] object-cover rounded-t-[12px]" 
-                        src={product.image} 
-                        alt={product.name} 
-                      />
+                         }}
+                         onClick={() => navigate(`/product-detail/${product.id}`)}>
+                      <div className="relative">
+                        <img 
+                          className="product-image w-full h-[180px] object-cover rounded-t-[12px]" 
+                          src={product.image} 
+                          alt={product.name} 
+                        />
+                        {product.currentSupply <= 5 && product.currentSupply > 0 && (
+                          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            Only {product.currentSupply} left!
+                          </div>
+                        )}
+                        {product.currentSupply <= 0 && (
+                          <div className="absolute top-2 left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded-full">
+                            Sold Out
+                          </div>
+                        )}
+                      </div>
                       <div className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="product-name text-lg font-bold text-white">{product.name}</h3>
@@ -184,12 +198,15 @@ const ProductList: React.FC<ProductListProps> = () => {
                           <span className="text-white text-xs opacity-50 product-supply">Remaining: {product.currentSupply}</span>
                           <Link 
                             to={`/product-detail/${product.id}`} 
-                            className="product-link text-white flex items-center text-sm hover:text-transparent"
+                            className="product-link text-white flex items-center text-sm"
                             style={{
-                              background: 'linear-gradient(135deg, #ccff00, #09fbd3)',
+                              backgroundImage: 'linear-gradient(135deg, #ccff00, #09fbd3)',
                               WebkitBackgroundClip: 'text',
                               backgroundClip: 'text',
-                            }}>
+                              color: 'transparent'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             View Details <i className="ri-arrow-right-s-line ml-1"></i>
                           </Link>
                         </div>
