@@ -126,12 +126,14 @@ const ProductList: React.FC<ProductListProps> = () => {
           
           {/* Top Navigation Bar */}
           <div className="sticky top-0 z-10 bg-black bg-opacity-90 backdrop-blur-md p-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">Product List</h1>
-            <div className="flex space-x-4">
-              <button className="text-white">
-                <i className="ri-search-line text-xl"></i>
-              </button>
-              <Link to="/admin" className="text-white">
+            <div className="flex items-center">
+              <Link to="/" className="mr-3">
+                <i className="ri-arrow-left-line text-white text-xl"></i>
+              </Link>
+              <h1 className="text-xl font-bold text-white">Product Collection</h1>
+            </div>
+            <div>
+              <Link to="/add-product" className="text-white">
                 <i className="ri-add-circle-line text-xl"></i>
               </Link>
             </div>
@@ -202,7 +204,7 @@ const ProductList: React.FC<ProductListProps> = () => {
                 <h3 className="text-xl font-bold text-white mb-2">No Products</h3>
                 <p className="text-white opacity-50 mb-6">No products yet, add one now!</p>
                 <Link 
-                  to="/admin" 
+                  to="/add-product" 
                   className="btn-primary px-6 py-3 rounded-xl font-bold text-black"
                   style={{
                     background: 'linear-gradient(135deg, #ccff00, #09fbd3)',
