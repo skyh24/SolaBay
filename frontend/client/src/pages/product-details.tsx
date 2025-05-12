@@ -200,20 +200,21 @@ const ProductDetails: React.FC = () => {
   
   return (
     <div style={{
-      backgroundColor: '#f5f7fa',
+      backgroundColor: '#000000',
       fontFamily: "'PingFang SC', 'Helvetica Neue', Arial, sans-serif",
-      backgroundImage: 
-        `radial-gradient(circle at 10px 10px, rgba(0, 0, 0, 0.05) 2px, transparent 2px),
-         radial-gradient(circle at 25px 25px, rgba(0, 0, 0, 0.05) 2px, transparent 2px)`,
-      backgroundSize: '30px 30px'
+      height: '100%',
+      width: '100%',
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden'
     }}>
-      {/* Background grid effect */}
-      <div className="page-grid-bg fixed top-0 left-0 right-0 bottom-0 pointer-events-none z-[-1]" 
+      {/* Black background */}
+      <div className="fixed top-0 left-0 right-0 bottom-0 pointer-events-none z-[-1]" 
            style={{
+             backgroundColor: '#000000',
              backgroundImage: `linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px)`,
              backgroundSize: '20px 20px'
-           }}>
-      </div>
+           }}></div>
 
       {/* Phone frame */}
       <div className="phone-frame w-[393px] h-[852px] border-[12px] border-[#222] rounded-[48px] overflow-hidden relative bg-black shadow-2xl m-[2rem] mx-auto"
@@ -289,122 +290,121 @@ const ProductDetails: React.FC = () => {
             {/* Price History Card */}
             <div className="price-history-card" style={{ borderRadius: '16px', backgroundColor: '#111111', padding: '16px', marginTop: '16px' }}>
               <h2 className="text-white font-bold mb-4">Price Trend</h2>
-              <div className="chart-container" style={{ position: 'relative', height: '220px', width: '100%', backgroundColor: '#111111', marginBottom: '10px' }}>
-                <div className="relative h-[180px] w-full">
-                  {/* SVG Line Chart */}
-                  <svg className="w-full h-full" style={{ overflow: 'visible' }}>
-                    {/* 定义渐变 - 从上到下 */}
-                    <defs>
-                      <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="rgba(204, 255, 0, 0.5)" />
-                        <stop offset="100%" stopColor="rgba(9, 251, 211, 0)" />
-                      </linearGradient>
-                      
-                      {/* 定义线条渐变 */}
-                      <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#ccff00" />
-                        <stop offset="100%" stopColor="#09fbd3" />
-                      </linearGradient>
-                    </defs>
-                    
-                    {/* 水平网格线 */}
-                    <g className="grid-lines">
-                      {[0, 0.25, 0.5, 0.75, 1].map((val, i) => (
-                        <line 
-                          key={i}
-                          x1="0%"
-                          y1={`${val * 100}%`}
-                          x2="100%"
-                          y2={`${val * 100}%`}
-                          stroke="rgba(255, 255, 255, 0.1)"
-                          strokeWidth="1"
-                        />
-                      ))}
-                    </g>
-                    
-                    {product.priceHistory.length > 1 && (
-                      <>
-                        {/* 填充区域 */}
-                        <path
-                          d={`
-                            M ${product.priceHistory.map((record, index) => {
-                              const totalPoints = product.priceHistory.length;
-                              const x = (index / (totalPoints - 1)) * 100;
-                              const maxPrice = getMaxPrice();
-                              const minPrice = getMinPrice();
-                              const range = maxPrice - minPrice || 1;
-                              const normalizedY = (1 - ((record.price - minPrice) / range)) * 100;
-                              return `${x}% ${normalizedY}%`;
-                            }).join(' L ')}
-                            L 100% 100%
-                            L 0% 100%
-                            Z
-                          `}
-                          fill="url(#areaGradient)"
-                          fillOpacity="0.5"
-                        />
+              <div className="chart-container" style={{ position: 'relative', height: '200px', width: '100%', marginBottom: '20px' }}>
+                {/* Chart.js style canvas */}
+                <canvas 
+                  id="price-chart" 
+                  ref={(canvas) => {
+                    // 当组件挂载和更新时，绘制图表
+                    if (canvas && product.priceHistory.length > 0) {
+                      const ctx = canvas.getContext('2d');
+                      if (ctx) {
+                        // 清除画布
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
                         
-                        {/* 折线 */}
-                        <path
-                          d={`
-                            M ${product.priceHistory.map((record, index) => {
-                              const totalPoints = product.priceHistory.length;
-                              const x = (index / (totalPoints - 1)) * 100;
-                              const maxPrice = getMaxPrice();
-                              const minPrice = getMinPrice();
-                              const range = maxPrice - minPrice || 1;
-                              const normalizedY = (1 - ((record.price - minPrice) / range)) * 100;
-                              return `${x}% ${normalizedY}%`;
-                            }).join(' L ')}
-                          `}
-                          stroke="#ccff00"
-                          strokeWidth="2"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                        // 设置画布尺寸
+                        const dpr = window.devicePixelRatio || 1;
+                        canvas.width = canvas.offsetWidth * dpr;
+                        canvas.height = canvas.offsetHeight * dpr;
+                        ctx.scale(dpr, dpr);
                         
-                        {/* 绘制点 */}
-                        {product.priceHistory.map((record, index) => {
-                          const totalPoints = product.priceHistory.length;
-                          const x = (index / (totalPoints - 1)) * 100;
-                          const maxPrice = getMaxPrice();
-                          const minPrice = getMinPrice();
-                          const range = maxPrice - minPrice || 1;
-                          const normalizedY = (1 - ((record.price - minPrice) / range)) * 100;
+                        // 定义常量
+                        const width = canvas.offsetWidth;
+                        const height = canvas.offsetHeight;
+                        const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+                        const chartWidth = width - padding.left - padding.right;
+                        const chartHeight = height - padding.top - padding.bottom;
+                        
+                        // 获取价格数据
+                        const prices = product.priceHistory.map(item => item.price);
+                        const maxPrice = getMaxPrice();
+                        const minPrice = getMinPrice() * 0.95; // 留出一点底部空间
+                        const priceRange = maxPrice - minPrice;
+                        
+                        // 绘制网格线
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                        ctx.lineWidth = 0.5;
+                        
+                        // 水平网格线
+                        for (let i = 0; i <= 4; i++) {
+                          const y = padding.top + (chartHeight / 4) * i;
+                          ctx.beginPath();
+                          ctx.moveTo(padding.left, y);
+                          ctx.lineTo(width - padding.right, y);
+                          ctx.stroke();
                           
-                          return (
-                            <circle 
-                              key={index}
-                              cx={`${x}%`}
-                              cy={`${normalizedY}%`}
-                              r="4"
-                              fill="#09fbd3"
-                            />
-                          );
-                        })}
-                      </>
-                    )}
-                  </svg>
-                  
-                  {/* Y轴标签 */}
-                  <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-white opacity-50">
-                    <div>{Math.ceil(getMaxPrice()).toFixed(0)}</div>
-                    <div></div>
-                    <div>{((getMaxPrice() + getMinPrice()) / 2).toFixed(0)}</div>
-                    <div></div>
-                    <div>{Math.floor(getMinPrice()).toFixed(0)}</div>
-                  </div>
-                  
-                  {/* X轴标签 */}
-                  <div className="absolute left-0 right-0 bottom-[-24px] flex justify-between text-xs text-white opacity-50 px-2">
-                    {product.priceHistory.map((_, index) => (
-                      <div key={index} className="text-center">
-                        Day {index + 1}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                          // Y轴标签
+                          const labelValue = maxPrice - (i / 4) * priceRange;
+                          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                          ctx.font = '10px Arial';
+                          ctx.textAlign = 'right';
+                          ctx.fillText(labelValue.toFixed(0), padding.left - 5, y + 3);
+                        }
+                        
+                        // 创建渐变
+                        const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+                        gradient.addColorStop(0, 'rgba(204, 255, 0, 0.5)');
+                        gradient.addColorStop(1, 'rgba(9, 251, 211, 0.0)');
+                        
+                        // 绘制填充区域
+                        ctx.beginPath();
+                        ctx.moveTo(padding.left, height - padding.bottom);
+                        
+                        // 添加所有价格点
+                        prices.forEach((price, index) => {
+                          const x = padding.left + (chartWidth / (prices.length - 1)) * index;
+                          const y = padding.top + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+                          ctx.lineTo(x, y);
+                        });
+                        
+                        // 完成填充区域
+                        ctx.lineTo(width - padding.right, height - padding.bottom);
+                        ctx.closePath();
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                        
+                        // 绘制折线
+                        ctx.beginPath();
+                        prices.forEach((price, index) => {
+                          const x = padding.left + (chartWidth / (prices.length - 1)) * index;
+                          const y = padding.top + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+                          
+                          if (index === 0) {
+                            ctx.moveTo(x, y);
+                          } else {
+                            ctx.lineTo(x, y);
+                          }
+                        });
+                        ctx.strokeStyle = '#ccff00';
+                        ctx.lineWidth = 2;
+                        ctx.lineJoin = 'round';
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+                        
+                        // 绘制数据点
+                        prices.forEach((price, index) => {
+                          const x = padding.left + (chartWidth / (prices.length - 1)) * index;
+                          const y = padding.top + chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+                          
+                          ctx.beginPath();
+                          ctx.arc(x, y, 4, 0, Math.PI * 2);
+                          ctx.fillStyle = '#09fbd3';
+                          ctx.fill();
+                        });
+                        
+                        // X轴标签
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                        ctx.font = '10px Arial';
+                        ctx.textAlign = 'center';
+                        prices.forEach((_, index) => {
+                          const x = padding.left + (chartWidth / (prices.length - 1)) * index;
+                          ctx.fillText(`Day ${index + 1}`, x, height - padding.bottom + 15);
+                        });
+                      }
+                    }
+                  }}
+                  style={{ width: '100%', height: '100%', backgroundColor: '#111111' }}
+                />
               </div>
               
               <p className="text-white opacity-50 text-xs mt-6 mb-1">Product Created On</p>
@@ -527,15 +527,7 @@ const ProductDetails: React.FC = () => {
         </div>
       )}
       
-      {/* Back to Product List Button */}
-      <div className="text-center my-5">
-        <button 
-          onClick={() => navigate('/products')}
-          className="inline-flex items-center text-white opacity-80 hover:opacity-100 transition"
-        >
-          <i className="ri-arrow-left-line mr-2"></i> Back to Product List
-        </button>
-      </div>
+      {/* 已移除返回产品列表按钮 */}
     </div>
   );
 };
