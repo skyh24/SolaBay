@@ -128,10 +128,12 @@ const ProductDetails: React.FC = () => {
         const supplyFactor = 1 + ((product.initialSupply - products[productIndex].currentSupply) / product.initialSupply);
         
         // Calculate new price (with random fluctuation)
-        let newPrice = latestPrice * timeDecay * supplyFactor;
+        // Use sensitivity to adjust the random fluctuation
+        const randomFactor = 0.95 + (Math.random() * product.sensitivity * 0.1);
+        let newPrice = latestPrice * timeDecay * supplyFactor * randomFactor;
         
         // Ensure price is between cost price and max price
-        newPrice = Math.max(product.costPrice, Math.min(product.maxPrice, newPrice));
+        newPrice = Math.max(product.costPrice, Math.min(product.maxPrice, parseFloat(newPrice.toFixed(2))));
         
         // Add to price history
         products[productIndex].priceHistory.push({

@@ -17,6 +17,7 @@ interface Product {
   costPrice: number;
   maxPrice: number;
   durationDays: number;
+  sensitivity: number;  // 价格敏感度系数，范围通常为0-1
   createdAt: string;
   priceHistory: PriceHistory[];
 }
@@ -65,8 +66,9 @@ const ProductList: React.FC<ProductListProps> = () => {
       // If exceeded duration days, don't update price anymore
       if (daysPassed >= product.durationDays) return product;
       
-      // Get latest price
+      // Get latest price and sensitivity
       const latestPrice = product.priceHistory[product.priceHistory.length - 1].price;
+      const sensitivity = parseFloat(product.sensitivity.toString()) || 0.5;
       
       // Calculate time decay factor (lower price over time)
       const timeDecay = 1 - (daysPassed / product.durationDays) * 0.5;
@@ -75,12 +77,14 @@ const ProductList: React.FC<ProductListProps> = () => {
       const supplyFactor = 1 + ((product.initialSupply - product.currentSupply) / product.initialSupply);
       
       // Calculate new price (with random fluctuation)
-      let newPrice = latestPrice * timeDecay * supplyFactor;
+      // Use sensitivity to adjust the random fluctuation
+      const randomFactor = 0.95 + (Math.random() * product.sensitivity * 0.1);
+      let newPrice = latestPrice * timeDecay * supplyFactor * randomFactor;
       
       // Ensure price is between cost price and max price
-      newPrice = Math.max(product.costPrice, Math.min(product.maxPrice, newPrice));
+      newPrice = Math.max(product.costPrice, Math.min(product.maxPrice, parseFloat(newPrice.toFixed(2))));
       
-      // Add to price history
+      // 添加到价格历史
       const updatedProduct = {
         ...product,
         priceHistory: [
