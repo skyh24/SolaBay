@@ -105,16 +105,9 @@ const ProductList: React.FC<ProductListProps> = () => {
   };
 
   return (
-    <div style={{
-      backgroundColor: '#f5f7fa',
-      fontFamily: "'PingFang SC', 'Helvetica Neue', Arial, sans-serif",
-      backgroundImage: 
-        `radial-gradient(circle at 10px 10px, rgba(0, 0, 0, 0.05) 2px, transparent 2px),
-         radial-gradient(circle at 25px 25px, rgba(0, 0, 0, 0.05) 2px, transparent 2px)`,
-      backgroundSize: '30px 30px'
-    }}>
+    <div className="flex flex-col items-center justify-center h-full">
       {/* Background grid effect */}
-      <div className="page-grid-bg fixed top-0 left-0 right-0 bottom-0 pointer-events-none z-[-1]" 
+      <div className="fixed top-0 left-0 right-0 bottom-0 pointer-events-none z-[-1]" 
            style={{
              backgroundImage: `linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px)`,
              backgroundSize: '20px 20px'
@@ -122,7 +115,7 @@ const ProductList: React.FC<ProductListProps> = () => {
       </div>
 
       {/* Phone frame */}
-      <div className="phone-frame w-[393px] h-[852px] border-[12px] border-[#222] rounded-[48px] overflow-hidden relative bg-black shadow-2xl m-[2rem] mx-auto"
+      <div className="w-[393px] h-[852px] border-[12px] border-[#222] rounded-[48px] overflow-hidden relative bg-black shadow-2xl m-8"
            style={{
              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 8px 20px -8px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05)'
            }}>
