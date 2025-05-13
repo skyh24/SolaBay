@@ -78,7 +78,7 @@ const ProductList: React.FC<ProductListProps> = () => {
       
       // Calculate new price (with random fluctuation)
       // Use sensitivity to adjust the random fluctuation
-      const randomFactor = 0.95 + (Math.random() * product.sensitivity * 0.1);
+      const randomFactor = 0.95 + (Math.random() * sensitivity * 0.1);
       let newPrice = latestPrice * timeDecay * supplyFactor * randomFactor;
       
       // Ensure price is between cost price and max price
