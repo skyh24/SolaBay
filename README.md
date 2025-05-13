@@ -2,6 +2,10 @@
 
 SolaBay is a decentralized marketplace built on the Solana blockchain, designed for trading limited edition digital goods. The platform offers a seamless user experience with integrated wallet functionality, product management, and transaction tracking.
 
+## Live Demo
+
+**Live Demo**: [https://sola-bay.vercel.app/](https://sola-bay.vercel.app/)
+
 ## Project Overview
 
 SolaBay combines modern web technologies with blockchain capabilities to create a responsive, user-friendly marketplace. The application features:
