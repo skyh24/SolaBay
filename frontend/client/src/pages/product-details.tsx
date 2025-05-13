@@ -465,17 +465,6 @@ const ProductDetails = () => {
         </div>
       </div>
       
-      {/* Buy Button */}
-      <div className="mt-6 mb-4">
-        <button 
-          onClick={handleBuyClick} 
-          className={`w-full py-3 px-4 text-white rounded-lg font-medium ${product?.currentSupply === 0 ? 'opacity-50 cursor-not-allowed bg-gray-600' : 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'}`}
-          disabled={product?.currentSupply === 0}
-        >
-          {product?.currentSupply === 0 ? 'Sold Out' : `Buy Now (${getLatestPrice().toFixed(2)} SOL)`}
-        </button>
-      </div>
-      
       {/* Phantom Wallet Modal */}
       {showModal && (
         <div 
