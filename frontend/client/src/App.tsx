@@ -10,16 +10,21 @@ import 'remixicon/fonts/remixicon.css'
 // Import routing components
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
+// Import Wallet Context Provider
+import WalletContextProvider from './context/WalletContextProvider'
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/product-list" element={<ProductList />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/product-detail/:id" element={<ProductDetails />} />
-      </Routes>
-    </BrowserRouter>
+    <WalletContextProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/product-list" element={<ProductList />} />
+          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/product-detail/:id" element={<ProductDetails />} />
+        </Routes>
+      </BrowserRouter>
+    </WalletContextProvider>
   )
 }
 

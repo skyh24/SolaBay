@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 // Define interfaces for product data
 interface PriceHistory {
@@ -23,9 +26,12 @@ interface Product {
   priceHistory: PriceHistory[];
 }
 
-const ProductDetails: React.FC = () => {
+const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
+  // Wallet integration
+  const { publicKey, connected, sendTransaction } = useWallet();
   
   // State variables
   const [product, setProduct] = useState<Product | null>(null);
@@ -34,6 +40,7 @@ const ProductDetails: React.FC = () => {
   const [purchaseQuantity, setPurchaseQuantity] = useState<number>(1);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
   const [transactionSuccess, setTransactionSuccess] = useState<boolean>(false);
+  const [transactionError, setTransactionError] = useState<string>('');
   
   // Refs
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -74,7 +81,7 @@ const ProductDetails: React.FC = () => {
   const handleBuyClick = () => {
     if (!product) return;
     setShowModal(true);
-    // 使用requestAnimationFrame确保DOM已更新
+    // 使用 requestAnimationFrame 确保 DOM 已更新
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (modalContentRef.current) {
@@ -92,18 +99,44 @@ const ProductDetails: React.FC = () => {
     setTimeout(() => {
       setShowModal(false);
       setProcessingTransaction(false);
-      setTransactionSuccess(false);
+      if (transactionSuccess) {
+        setTransactionSuccess(false);
+      }
+      setTransactionError('');
     }, 300);
   };
   
-  // Process purchase
-  const processPurchase = () => {
-    if (!product) return;
+  // Process purchase with Phantom wallet
+  const processPurchase = async () => {
+    if (!product || !connected || !publicKey) return;
+    if (!showModal) return;
     
     setProcessingTransaction(true);
+    setTransactionError('');
     
-    // Simulate transaction processing
-    setTimeout(() => {
+    try {
+      // Create a Solana connection
+      const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+      
+      // Calculate the total cost in lamports (1 SOL = 1,000,000,000 lamports)
+      const latestPrice = getLatestPrice();
+      const totalCost = latestPrice * purchaseQuantity * LAMPORTS_PER_SOL;
+      
+      // Create a transaction
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey('11111111111111111111111111111111'), // Replace with your merchant wallet address
+          lamports: Math.floor(totalCost),
+        })
+      );
+      
+      // Send the transaction
+      const signature = await sendTransaction(transaction, connection);
+      
+      // Wait for confirmation
+      await connection.confirmTransaction(signature, 'confirmed');
+      
       // Transaction successful
       setProcessingTransaction(false);
       setTransactionSuccess(true);
@@ -148,11 +181,16 @@ const ProductDetails: React.FC = () => {
         setProduct(products[productIndex]);
       }
       
-      // Close modal after a delay
+      // Reset after 2 seconds
       setTimeout(() => {
-        handleCloseModal();
-      }, 800);
-    }, 1000);
+        setTransactionSuccess(false);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Transaction error:', error);
+      setProcessingTransaction(false);
+      setTransactionError(error instanceof Error ? error.message : 'Transaction failed');
+    }
   };
   
   // 我们使用Day 1, Day 2, Day 3直接在UI中显示，不需要日期转换函数
@@ -427,7 +465,18 @@ const ProductDetails: React.FC = () => {
         </div>
       </div>
       
-      {/* OKX Wallet Style Transaction Modal */}
+      {/* Buy Button */}
+      <div className="mt-6 mb-4">
+        <button 
+          onClick={handleBuyClick} 
+          className={`w-full py-3 px-4 text-white rounded-lg font-medium ${product?.currentSupply === 0 ? 'opacity-50 cursor-not-allowed bg-gray-600' : 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'}`}
+          disabled={product?.currentSupply === 0}
+        >
+          {product?.currentSupply === 0 ? 'Sold Out' : `Buy Now (${getLatestPrice().toFixed(2)} SOL)`}
+        </button>
+      </div>
+      
+      {/* Phantom Wallet Modal */}
       {showModal && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-80 flex items-end justify-center z-50"
@@ -448,8 +497,8 @@ const ProductDetails: React.FC = () => {
             {/* Wallet Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <img src="https://static.okx.com/cdn/assets/imgs/225/C26E05CFD9349799.png" alt="OKX Wallet" className="h-7 mr-2" />
-                <span className="text-white font-medium">OKX Wallet</span>
+                <img src="https://phantom.app/img/phantom-logo.svg" alt="Phantom Wallet" className="h-7 mr-2" />
+                <span className="text-white font-medium">Phantom Wallet</span>
               </div>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-white">
                 <i className="ri-close-line text-xl"></i>
@@ -464,11 +513,11 @@ const ProductDetails: React.FC = () => {
               </div>
               <div className="flex justify-between items-center mb-3">
                 <span className="text-gray-400 text-sm">Product</span>
-                <span className="text-white font-medium">{product.name}</span>
+                <span className="text-white font-medium">{product?.name}</span>
               </div>
               <div className="flex justify-between items-center mb-3">
                 <span className="text-gray-400 text-sm">Price</span>
-                <span className="text-white font-medium">{latestPrice.toFixed(2)} SOL</span>
+                <span className="text-white font-medium">{getLatestPrice().toFixed(2)} SOL</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400 text-sm">Quantity</span>
@@ -509,27 +558,44 @@ const ProductDetails: React.FC = () => {
               </div>
             </div>
             
-            {/* Transaction Buttons */}
-            <div className="flex space-x-3">
-              <button 
-                onClick={handleCloseModal} 
-                className="flex-1 py-3 px-4 bg-[#17181D] text-white rounded-lg font-medium border border-gray-700"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={processPurchase} 
-                className={`flex-1 py-3 px-4 text-white rounded-lg font-medium ${processingTransaction ? 'opacity-75' : ''} ${transactionSuccess ? 'bg-gradient-to-r from-green-500 to-green-700' : 'bg-gradient-to-r from-blue-500 to-blue-700'}`}
-                disabled={processingTransaction}
-              >
-                {processingTransaction ? 'Processing...' : transactionSuccess ? 'Transaction successful!' : 'Confirm Payment'}
-              </button>
+            {/* Wallet Connect and Transaction Buttons */}
+            <div className="flex flex-col space-y-3">
+              {/* Wallet Connect Button */}
+              <div className="wallet-adapter-button-container">
+                <WalletMultiButton className="wallet-adapter-button wallet-adapter-button-trigger w-full" />
+              </div>
+              
+              {/* Transaction Buttons */}
+              <div className="flex space-x-3 mt-3">
+                <button 
+                  onClick={handleCloseModal} 
+                  className="flex-1 py-3 px-4 bg-[#17181D] text-white rounded-lg font-medium border border-gray-700"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={processPurchase} 
+                  className={`flex-1 py-3 px-4 text-white rounded-lg font-medium ${!connected ? 'opacity-50 cursor-not-allowed' : processingTransaction ? 'opacity-75' : ''} ${transactionSuccess ? 'bg-gradient-to-r from-green-500 to-green-700' : 'bg-gradient-to-r from-blue-500 to-blue-700'}`}
+                  disabled={!connected || processingTransaction}
+                >
+                  {!connected ? 'Connect Wallet First' : 
+                   processingTransaction ? 'Processing...' : 
+                   transactionSuccess ? 'Purchase Successful!' : 
+                   `Confirm Payment (${(getLatestPrice() * purchaseQuantity).toFixed(2)} SOL)`}
+                </button>
+              </div>
+              
+              {/* Error message */}
+              {transactionError && (
+                <div className="text-red-500 text-sm mt-2 text-center">
+                  Error: {transactionError}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
       
-      {/* 已移除返回产品列表按钮 */}
     </div>
   );
 };
