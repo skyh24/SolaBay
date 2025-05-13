@@ -58,7 +58,7 @@ const HomePage: React.FC<HomePageProps> = () => {
               </Link>
               
               {/* My Account Card */}
-              <a href="#" className="p-6 flex items-center rounded-[16px] bg-[#111111] shadow-md transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg"
+              <Link to="/my-account" className="p-6 flex items-center rounded-[16px] bg-[#111111] shadow-md transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg"
                  style={{
                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                    transition: 'all 0.3s ease'
@@ -73,7 +73,7 @@ const HomePage: React.FC<HomePageProps> = () => {
                   <h3 className="text-white font-bold text-lg">My Account</h3>
                   <p className="text-white opacity-70 text-sm">Manage your profile and transactions</p>
                 </div>
-              </a>
+              </Link>
               
               {/* Merchant Management Card */}
               <Link to="/add-product" className="p-6 flex items-center rounded-[16px] bg-[#111111] shadow-md transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg"
