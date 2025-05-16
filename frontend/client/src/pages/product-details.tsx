@@ -122,20 +122,36 @@ const ProductDetails = () => {
       const latestPrice = getLatestPrice();
       const totalCost = latestPrice * purchaseQuantity * LAMPORTS_PER_SOL;
       
+      // Use a valid merchant wallet address - this is a sample devnet address
+      // For production, replace with your actual merchant wallet address
+      const merchantWallet = new PublicKey('GfnDQXkwMYJ5zJhBokrW5aXUVw8RhK6QJMaU3Aah515d');
+      
       // Create a transaction
-      const transaction = new Transaction().add(
+      const transaction = new Transaction();
+      
+      // Add a recent blockhash to the transaction
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+      
+      // Add the transfer instruction
+      transaction.add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
-          toPubkey: new PublicKey('11111111111111111111111111111111'), // Replace with your merchant wallet address
+          toPubkey: merchantWallet,
           lamports: Math.floor(totalCost),
         })
       );
       
       // Send the transaction
+      console.log('Sending transaction...');
       const signature = await sendTransaction(transaction, connection);
+      console.log('Transaction sent with signature:', signature);
       
       // Wait for confirmation
-      await connection.confirmTransaction(signature, 'confirmed');
+      console.log('Waiting for transaction confirmation...');
+      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+      console.log('Transaction confirmed:', confirmation);
       
       // Transaction successful
       setProcessingTransaction(false);
@@ -189,7 +205,22 @@ const ProductDetails = () => {
     } catch (error) {
       console.error('Transaction error:', error);
       setProcessingTransaction(false);
-      setTransactionError(error instanceof Error ? error.message : 'Transaction failed');
+      
+      // Improved error handling with more specific error messages
+      let errorMessage = 'Transaction failed';
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          errorMessage = 'Transaction rejected by user';
+        } else if (error.message.includes('insufficient funds')) {
+          errorMessage = 'Insufficient funds in wallet';
+        } else if (error.message.includes('blockhash')) {
+          errorMessage = 'Transaction expired. Please try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setTransactionError(errorMessage);
     }
   };
   
@@ -370,7 +401,7 @@ const ProductDetails = () => {
                           ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                           ctx.font = '10px Arial';
                           ctx.textAlign = 'right';
-                          ctx.fillText(labelValue.toFixed(0), padding.left - 5, y + 3);
+                          ctx.fillText(labelValue.toFixed(2), padding.left - 5, y + 3);
                         }
                         
                         // 创建渐变
