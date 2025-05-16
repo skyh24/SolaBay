@@ -124,7 +124,7 @@ const ProductDetails = () => {
       
       // Use a valid merchant wallet address - this is a sample devnet address
       // For production, replace with your actual merchant wallet address
-      const merchantWallet = new PublicKey('GfnDQXkwMYJ5zJhBokrW5aXUVw8RhK6QJMaU3Aah515d');
+      const merchantWallet = new PublicKey('Ga8RmDKHmmd6qv2ygA46ehZrjwLDfgKogx4L6zdTgeBP');
       
       // Create a transaction
       const transaction = new Transaction();
